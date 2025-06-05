@@ -33,14 +33,28 @@ const Records = () => {
   }, []);
 
   // ✅ Aprobar usuario
-  const aprobarUsuario = async (id: string) => {
-    try {
-      await axios.put(`http://localhost:3000/api/auth/approve/${id}`);
-      fetchUsuarios(); // Refrescar la lista
-    } catch (error) {
-      console.error('Error al aprobar usuario', error);
-    }
-  };
+  const aprobarUsuario = async (userId: string) => {
+  try {
+    const token = localStorage.getItem('token'); // ⬅️ recupera el token
+
+    const response = await axios.put(
+      `http://localhost:3000/api/auth/approve/${userId}`,
+      {}, // cuerpo vacío
+      {
+        headers: {
+          Authorization: `Bearer ${token}` // ⬅️ añade el token en el header
+        }
+      }
+    );
+
+    console.log('Usuario aprobado:', response.data);
+    // Actualiza el estado si es necesario
+
+  } catch (error) {
+    console.error('Error al aprobar usuario', error);
+  }
+};
+
 
   // ✅ Eliminar usuario
   const eliminarUsuario = async (id: string) => {
