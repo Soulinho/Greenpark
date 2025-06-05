@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-
 import axios from 'axios';
 
 interface Usuario {
@@ -16,10 +15,14 @@ const Records = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Obtener usuarios al montar el componente
   const fetchUsuarios = async () => {
     try {
-      const res = await axios.get('http://localhost:3000/api/auth/users');
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:3000/api/auth/users', {
+        headers: {
+          Authorization: `Bearer ${token}`,  // ¡IMPORTANTE!
+        },
+      });
       setUsuarios(res.data);
     } catch (error) {
       console.error('Error al obtener usuarios', error);
@@ -32,37 +35,42 @@ const Records = () => {
     fetchUsuarios();
   }, []);
 
-  // ✅ Aprobar usuario
+  // Aprobar usuario
   const aprobarUsuario = async (userId: string) => {
-  try {
-    const token = localStorage.getItem('token'); // ⬅️ recupera el token
+    try {
+      const token = localStorage.getItem('token');
 
-    const response = await axios.put(
-      `http://localhost:3000/api/auth/approve/${userId}`,
-      {}, // cuerpo vacío
-      {
-        headers: {
-          Authorization: `Bearer ${token}` // ⬅️ añade el token en el header
+      const response = await axios.put(
+        `http://localhost:3000/api/auth/approve/${userId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      }
-    );
+      );
 
-    console.log('Usuario aprobado:', response.data);
-    // Actualiza el estado si es necesario
+      console.log('Usuario aprobado:', response.data);
+      fetchUsuarios(); // Refrescar lista después de aprobar
+    } catch (error) {
+      console.error('Error al aprobar usuario', error);
+      alert('No se pudo aprobar el usuario');
+    }
+  };
 
-  } catch (error) {
-    console.error('Error al aprobar usuario', error);
-  }
-};
-
-
-  // ✅ Eliminar usuario
+  // Eliminar usuario
   const eliminarUsuario = async (id: string) => {
     try {
-      await axios.delete(`http://localhost:3000/api/auth/users/${id}`);
-      fetchUsuarios(); // Refrescar la lista
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:3000/api/auth/users/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      fetchUsuarios(); // Refrescar lista después de eliminar
     } catch (error) {
       console.error('Error al eliminar usuario', error);
+      alert('No se pudo eliminar el usuario');
     }
   };
 
